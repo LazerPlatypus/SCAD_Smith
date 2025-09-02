@@ -1,0 +1,14 @@
+# Ignore 3D object files exported by OpenSCAD
+*.stl
+*.STL
+*.obj
+*.OBJ
+*.off
+*.OFF
+*.amf
+*.AMF
+*.dxf
+*.DXF
+
+# Ignore macOS system files
+.DS_Store
