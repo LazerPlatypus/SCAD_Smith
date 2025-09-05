@@ -7,10 +7,10 @@ function gen_coords(
     points,
     fn = 5,
 ) = 
-  let (
-    radii_points = [ for (point = points) [point.x, point.y, len(point) > 2 ? point.z : 0]]
-  )
-  polyRound(radii_points, fn=fn, mode=0);
+    let (
+        radii_points = [ for (point = points) [point.x, point.y, len(point) > 2 ? point.z : 0]]
+    )
+    polyRound(radii_points, fn=fn, mode=0);
 
 // translate_coords translates 2D coords in the XY plane, allowing rotation about the Z axis
 // uses translateRadiiPoints under the hood, requires coords, not points ([x, y, r])
@@ -49,10 +49,6 @@ module extrude(
         plane == "-Z"
     )
     let (
-        radii_points = [ 
-            for (point = points) 
-                [point.x, point.y, len(point) > 2 ? point.z : 0]
-        ],
         translation = 
           plane == "X"
           ? [0,0,0]
@@ -77,19 +73,19 @@ module extrude(
             : plane == "-Z"
             ? [0, 0, 0]
             : [0, 0, 0]
-    )
-
-    translate(translation) {
-        rotate(rotation) {
-            linear_extrude(
-                height = length, 
-                center = center,
-                convexity=convexity, 
-                twist=twist, 
-                slices=slices,
-            ) {
-                children();
-            };
+    ) {
+        translate(translation) {
+            rotate(rotation) {
+                linear_extrude(
+                    height = length, 
+                    center = center,
+                    convexity=convexity, 
+                    twist=twist, 
+                    slices=slices,
+                ) {
+                    children();
+                };
+            }
         }
     }
 }
@@ -135,13 +131,13 @@ module extrude_points(
           plane == "X"
           ? [0,0,0]
           : plane == "-X"
-          ? [ center ? 0: -length, 0, 0]
+          ? [ center ? -length / 2: -length, 0, 0]
           : plane == "Y"
-          ? [0, center ? 0 : length, 0]
+          ? [0, center ? length / 2 : length, 0]
           : plane == "-Y"
           ? [0, 0, 0]
           : plane == "-Z"
-          ? [0, 0, center ? 0: -length]
+          ? [0, 0, center ? -length / 2: -length]
           : [0, 0, 0],
         rotation = 
             plane == "X"
@@ -155,18 +151,18 @@ module extrude_points(
             : plane == "-Z"
             ? [0, 0, 0]
             : [0, 0, 0]
-    )
-
-    translate(translation) {
-        rotate(rotation) {
-            polyRoundExtrude(
-                radii_points = radii_points,
-                length=length,
-                r1 = r1,
-                r2 = r2,
-                fn = fn,
-                convexity = convexity,
-            );
+    ) {
+        translate(translation) {
+            rotate(rotation) {
+                polyRoundExtrude(
+                    radiiPoints = radii_points,
+                    length=length,
+                    r1 = r1,
+                    r2 = r2,
+                    fn = fn,
+                    convexity = convexity,
+                );
+            }
         }
     }
 };
@@ -240,23 +236,24 @@ module extrude_shell_points(
             : plane == "-Z"
             ? [0, 0, 0]
             : [0, 0, 0]
-    );
-    translate(translation) {
-        rotate(rotation) {
-            extrudeWithRadius(
-                length=length,
-                r1=r1,
-                r2=r2,
-                fn=fn,
-            ) {
-                shell2d(
-                    offset1 = inner_offset,
-                    offset2 = outer_offset,
-                    minOr = min_outer_radius,
-                    minIr = min_inner_radius,
+    ) {
+        translate(translation) {
+            rotate(rotation) {
+                extrudeWithRadius(
+                    length=length,
+                    r1=r1,
+                    r2=r2,
+                    fn=fn,
                 ) {
-                    polyRound(radiiPoints=radii_points, fn=fn, mode=0);
-                    children();
+                    shell2d(
+                        offset1 = inner_offset,
+                        offset2 = outer_offset,
+                        minOr = min_outer_radius,
+                        minIr = min_inner_radius,
+                    ) {
+                        polyRound(radiiPoints=radii_points, fn=fn, mode=0);
+                        children();
+                    }
                 }
             }
         }
@@ -340,21 +337,22 @@ module extrude_beam(
             : plane == "-Z"
             ? [0, 0, 0]
             : [0, 0, 0]
-    );
-    translate(translation) {
-        rotate(rotation) {
-            polyRoundExtrude(
-                radiiPoints = beamChain(
-                    radiiPoints=radii_points,
-                    offset1 = inner_offset,
-                    offset2 = outer_offset,
-                ), 
-                length = length, 
-                r1 = r1, 
-                r2 = r2, 
-                fn = fn, 
-                convexity = convexity,
-            );
+    ) {
+        translate(translation) {
+            rotate(rotation) {
+                polyRoundExtrude(
+                    radiiPoints = beamChain(
+                        radiiPoints=radii_points,
+                        offset1 = inner_offset,
+                        offset2 = outer_offset,
+                    ), 
+                    length = length, 
+                    r1 = r1, 
+                    r2 = r2, 
+                    fn = fn, 
+                    convexity = convexity,
+                );
+            }
         }
     }
 }
